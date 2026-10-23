@@ -623,6 +623,38 @@ body.hq .toast{background:#1A241D;color:var(--ink);border:1px solid var(--brass-
 .promo .pname{font-family:var(--display);font-weight:800;font-size:64px;letter-spacing:.1em;color:var(--ink)}
 .promo button{background:var(--gold-grad);color:var(--brass-ink);letter-spacing:.1em}
 body.hq textarea,body.hq input[type=text],body.hq select,body.hq input[type=number]{background:#0E1511;border-color:var(--line2);border-radius:var(--r-s)}
+/* ── v1.1：ホームの並び・試験チップ・初回の案内 ── */
+.examchip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 10px;border-radius:999px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13px;font-weight:700;letter-spacing:.02em}
+.examchip .led{margin:0}
+.examchip svg{color:var(--brass)}
+.hero{grid-template-columns:auto 1fr;padding:14px 16px}
+.hero .radar{width:96px;height:96px}
+.hero .radar .ins{width:80px;height:auto}
+.hero .rk{font-size:40px}
+body.hq .tabbar .fab{color:var(--brass-ink)}
+.hero{padding:12px 14px;gap:10px 12px}
+.hero .radar{width:84px;height:84px}
+.hero .radar .ins{width:70px}
+.hero .rk{font-size:36px}
+.hero .quote{font-size:12.5px}
+.ammo{margin-top:0}
+.xprow{margin-top:6px}
+.kyokan{grid-template-columns:96px 1fr;padding-top:6px}
+.kyokan img{width:104px}
+.kyokan .bubble{margin-bottom:10px;font-size:14.5px}
+.sortie{padding:18px 18px}
+.sortie .big{font-size:40px}
+.kyokan{grid-template-columns:104px 1fr}
+.kyokan img{width:114px}
+.hero .quote{margin-top:2px}
+.examlist{display:flex;flex-direction:column;gap:8px}
+.examlist button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:13px 15px;border-radius:var(--r-m);border:1px solid var(--line2);background:var(--surface2)}
+.examlist button b{font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:.05em}
+.examlist button span{font-size:12px;color:var(--muted)}
+.examlist button[aria-pressed="true"]{border-color:var(--brass-line);background:var(--brass-soft)}
+.examlist button[aria-pressed="true"] b{color:var(--brass)}
+#app>.stack>*{animation:rise .28s ease-out both}
+#app>.stack>*:nth-child(2){animation-delay:.03s}#app>.stack>*:nth-child(3){animation-delay:.06s}#app>.stack>*:nth-child(4){animation-delay:.09s}#app>.stack>*:nth-child(n+5){animation-delay:.12s}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -1898,7 +1930,8 @@ function render() {
 }
 
 function topbar() {
-  return `<div class="hqbar"><span class="led ${syncState === "cloud" ? "" : "off"}"></span><span id="sync"></span><div class="spacer"></div><span class="hqtitle">庭師道場</span><button class="chipbtn" data-act="sound" aria-label="効果音の切り替え" style="background:transparent">${S.sound ? IC.sound : IC.mute}</button></div>`;
+  const exam = EXAMS.find(e => e.id === S.exam);
+  return `<div class="hqbar"><button class="examchip" data-act="examsheet" aria-label="目標の試験を変える：今は${exam.long}"><span class="led ${syncState === "cloud" ? "" : "off"}"></span>${exam.name}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><span id="sync" hidden></span><div class="spacer"></div><span class="hqtitle">庭師道場</span><button class="chipbtn" data-act="sound" aria-label="効果音の切り替え" style="background:transparent">${S.sound ? IC.sound : IC.mute}</button></div>`;
 }
 function pagebar(ja, en, right = "") {
   return `<div class="pagebar"><div><span class="en">${en}</span><h1>${ja}</h1></div><div class="spacer"></div>${right}</div>`;
@@ -1937,7 +1970,7 @@ function renderHome(app) {
   const segs = 20, on = Math.floor(rp.frac * segs);
   const medalsN = Object.keys(S.medals).length;
   app.innerHTML = `<div class="stack">
-  <div class="hqbar"><span class="led ${syncState === "cloud" ? "" : "off"}"></span><span id="sync"></span><div class="spacer"></div><span class="hqtitle">庭師道場<span class="hqsub"> 鬼松老師の庭</span></span><button class="chipbtn" data-act="sound" aria-label="効果音の切り替え" style="background:transparent">${S.sound ? IC.sound : IC.mute}</button></div>
+  ${topbar()}
 
   ${NEED_A2HS && !S.a2hsHide ? `<section class="panel a2hs" style="border-color:var(--brass-line)"><h3>ホーム画面に追加してください</h3>
     <p class="note" style="margin:6px 0 8px">このままSafariで使うと、しばらく開かない日が続いたときに記録が消えることがあります。ホーム画面に追加すると、アプリのように開けて、記録も消えにくくなり、ネットがなくても使えます。</p>
@@ -1960,28 +1993,6 @@ function renderHome(app) {
 
   ${kyokanPanel(kHome({days, gap, weakN, todayN}))}
 
-  <div class="readouts">
-    <div class="ro"><div class="k">連続稽古</div><div class="v num">${st}<small>日</small></div></div>
-    <div class="ro"><div class="k">正解数</div><div class="v num">${S.stats.correct.toLocaleString()}</div></div>
-    <div class="ro"><div class="k">免状</div><div class="v num">${medalsN}<small>/${MEDALS.length}</small></div></div>
-  </div>
-
-  <div class="sectitle">目標の試験</div>
-  ${examSeg()}
-
-  <section class="ops hud" aria-label="合格への道のり">
-    <div class="dday">
-      <div class="k">試験まで</div>
-      <div class="v num">${days === null ? "D-?" : days >= 0 ? "D-" + days : "終了"}</div>
-      <button data-act="setdate">${days === null ? "試験日を設定" : "日付を変更"}</button>
-    </div>
-    <div class="meter">${meterSvg(pr.score, pr.line)}</div>
-    <div style="grid-column:1/3;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <span class="verdict ${gap <= 0 ? "pass" : "not"}">${gap <= 0 ? "合格圏に到達" : `合格まで あと${gap}点`}</span><span class="note">白い線が合格ライン（${pr.line}点）</span>
-      <span class="note">${perDay ? `1日の目安 <b style="color:var(--ink)">${perDay}問</b>・今日 ${todayN}問` : `習得 ${pr.mastered}/${pr.total}問`}</span>
-    </div>
-  </section>
-
   <button class="sortie" data-act="start">
     <div><div class="en">KEIKO</div><div class="big">稽古</div><div class="sm">${exam.long} ・ ${SET_SIZE}問</div></div>
     <div class="chev" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -1996,6 +2007,30 @@ function renderHome(app) {
     ${S.daily.ids.map(id => { const m = MISSIONS.find(x => x.id === id), p = Math.min(S.daily.p[id] || 0, m.goal), done = S.daily.done[id];
       return `<div class="mission ${done?"done":""}">${done ? `<span class="hanko">済</span>` : `<span class="chk"></span>`}<span class="mt">${m.n}</span><span class="mprog num">${p}/${m.goal}</span><span class="mbar"><i style="width:${pct(p,m.goal)}%"></i></span></div>`; }).join("")}
   </section>
+
+  <div class="readouts">
+    <div class="ro"><div class="k">連続稽古</div><div class="v num">${st}<small>日</small></div></div>
+    <div class="ro"><div class="k">正解数</div><div class="v num">${S.stats.correct.toLocaleString()}</div></div>
+    <div class="ro"><div class="k">免状</div><div class="v num">${medalsN}<small>/${MEDALS.length}</small></div></div>
+  </div>
+
+  <section class="ops hud" aria-label="合格への道のり">
+    <div class="dday">
+      <div class="k">試験まで</div>
+      <div class="v num">${days === null ? "D-?" : days >= 0 ? "D-" + days : "終了"}</div>
+      <button data-act="setdate">${days === null ? "試験日を設定" : "日付を変更"}</button>
+    </div>
+    <div class="meter">${meterSvg(pr.score, pr.line)}</div>
+    <div style="grid-column:1/3;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="verdict ${gap <= 0 ? "pass" : "not"}">${gap <= 0 ? "合格圏に到達" : `合格まで あと${gap}点`}</span><span class="note">白い線が合格ライン（${pr.line}点）</span>
+      <span class="note">${perDay ? `1日の目安 <b style="color:var(--ink)">${perDay}問</b>・今日 ${todayN}問` : `習得 ${pr.mastered}/${pr.total}問`}</span>
+    </div>
+  </section>
+
+
+
+
+
 
   <div class="sectitle">今月の庭</div>
   <div class="intel">
@@ -2079,6 +2114,22 @@ function treeSheet(id) {
   document.body.appendChild(ov);
 }
 
+function examSheet(first) {
+  const ov = document.createElement("div"); ov.className = "overlay";
+  ov.innerHTML = `<div class="sheet" role="dialog" aria-label="目標の試験"><div class="stack">
+    <div class="row"><div><div class="eyebrow">${first ? "ようこそ、庭師道場へ" : "目標の試験"}</div><h2 class="disp" style="font-size:26px">${first ? "どの試験を目指す？" : "試験を選ぶ"}</h2></div><div class="spacer"></div>${first ? "" : `<button class="xbtn" data-close aria-label="閉じる">${IC.x}</button>`}</div>
+    ${first ? `<div class="ksay igen" style="margin:0">${kImg("oshie", 88)}${kBubble(kSay("oshie", "まずは目指す試験を決めい。問題も樹木も、その試験に合わせて出しちゃる。あとで変えてもええ。"))}</div>` : ""}
+    <div class="examlist">${EXAMS.map(e => { const d = daysToExam(e.id); return `<button data-pick="${e.id}" aria-pressed="${S.exam === e.id}"><b>${e.long}</b><span>${qPool(e.id).length}問${e.id[0] === "g" ? ` ・ 樹木${TREES.filter(t => (t.ex || []).includes(e.id)).length}種` : ""}${d != null && d >= 0 ? ` ・ 試験まで${d}日` : ""}</span></button>`; }).join("")}</div>
+    <button class="btn" data-date>${daysToExam(S.exam) == null ? "試験日を設定する" : "試験日を変える"}</button>
+  </div></div>`;
+  ov.addEventListener("click", e => {
+    const pk = e.target.closest("[data-pick]");
+    if (pk) { S.exam = pk.dataset.pick; S.onboarded = true; save(); ov.remove(); render(); toast(`目標：${EXAMS.find(x => x.id === S.exam).long}`); return; }
+    if (e.target.closest("[data-date]")) { S.onboarded = true; save(); ov.remove(); dateSheet(); return; }
+    if (!first && (e.target === ov || e.target.closest("[data-close]"))) { ov.remove(); }
+  });
+  document.body.appendChild(ov);
+}
 function dateSheet() {
   const exam = EXAMS.find(e => e.id === S.exam);
   const ov = document.createElement("div"); ov.className = "overlay";
@@ -2115,7 +2166,7 @@ function renderRecord(app) {
     <div class="stat"><div class="v num">${st.bestCombo}</div><div class="l">最高連続正解</div></div>
     <div class="stat"><div class="v num">${streakNow()}</div><div class="l">連続稽古日数</div></div>
     <div class="stat"><div class="v num">${st.sets}</div><div class="l">稽古の回数</div></div>
-    <div class="stat"><div class="v num">${st.blitzBest}</div><div class="l">一分勝負 最高</div></div>
+    <div class="stat"><div class="v num">${st.blitzBest}</div><div class="l">一分勝負</div></div>
   </div>
   <section class="panel"><h3>直近7日の回答数 <span class="spacer"></span><span class="mprog num">計 ${Object.entries(S.log).filter(([k]) => +k > today() - 7).reduce((a, [,v]) => a + v.a, 0)}問</span></h3>
     <div style="margin-top:8px">${weekChart()}</div>
@@ -2280,6 +2331,7 @@ function answer(k, btn) {
   if (mock) { if (btn && btn.style) btn.style.borderColor = "var(--ink)"; setTimeout(() => { if (session && !quiz.result) nextQ(); }, 250); return; }
   [...ans.children].forEach((b, j) => { if (j === it.answer) b.classList.add("is-ok"); else if (j === k) b.classList.add("is-ng"); else b.classList.add("dim"); });
   const cmb = $("#combo"); if (cmb) { cmb.textContent = session.combo >= 2 ? session.combo + "連" : ""; if (session.combo >= 2) { cmb.classList.remove("pop"); void cmb.offsetWidth; cmb.classList.add("pop"); } }
+  try { if (navigator.vibrate && !mock) navigator.vibrate(ok ? 12 : idk ? 0 : [22, 40, 22]); } catch (e) {}
   if (ok) { session.combo >= 3 ? SND.combo(Math.min(session.combo, 10)) : SND.ok(); if (gain) floatXP(btn, gain); }
   else if (idk) SND.idk();
   else { SND.ng(); $(".qcard").classList.add("shake"); }
@@ -2636,6 +2688,7 @@ document.addEventListener("click", e => {
     if (t.startsWith("旬の重点")) start("season"); else if (t === "頻出テーマ稽古") start("hot"); else if (k === "normal") start("normal", QUESTIONS.some(q => q.cat === t) ? t : null); else start(k); }
   else if (a === "kyokan") { const t = kTier(), k = kSay(t === 5 ? "rei" : t >= 4 ? "dere" : kPick(["igen","igen","oshie"]), kPick(K_HOME[t])); const el = $("#kyokan"); if (el) el.outerHTML = kyokanPanel(k); }
   else if (a === "notify") toggleNotify();
+  else if (a === "examsheet") examSheet(false);
   else if (a === "a2hs-hide") { S.a2hsHide = true; save(); render(); }
   else if (a === "report") { const it = session?.items[session.i]; if (it) reportSheet(it); }
   else if (a === "reports") copyReports();
@@ -2701,6 +2754,7 @@ function initNative() {
 render();
 connectCloud();
 initNative();
+if (!S.onboarded && !S.stats.answered && !quiz) setTimeout(() => { if (!document.querySelector(".overlay")) examSheet(true); }, 350);
 // Web版（PWA）：一度開けば、ネットがなくても動くようにする
 if (!HOSTED && !NATIVE && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
