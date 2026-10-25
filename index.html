@@ -647,6 +647,20 @@ body.hq .tabbar .fab{color:var(--brass-ink)}
 .kyokan{grid-template-columns:104px 1fr}
 .kyokan img{width:114px}
 .hero .quote{margin-top:2px}
+/* ホーム整理（2026-10-25）：老師を小さく、見どころは横に流す、稽古は4つ＋ほか */
+.kyokan{grid-template-columns:84px 1fr!important;padding-top:8px!important}
+.kyokan img{width:92px!important}
+.kyokan .bubble{font-size:14px;line-height:1.7}
+.strip{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:2px}
+.strip::-webkit-scrollbar{display:none}
+.strip>*{flex:0 0 64%;scroll-snap-align:start;min-width:0}
+.strip>.card img{aspect-ratio:16/8}
+.strip>.tipcard{flex-basis:78%;justify-content:flex-start}
+.moremodes>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px dashed var(--line2);border-radius:var(--r-m);color:var(--muted);font-weight:700;font-size:14px}
+.moremodes>summary::-webkit-details-marker{display:none}
+.moremodes>summary::after{content:"＋";color:var(--brass)}
+.moremodes[open]>summary::after{content:"－"}
+.moremodes>.modes{margin-top:8px}
 .tipcard{display:flex;flex-direction:column;gap:4px;text-align:left;width:100%;padding:14px 16px;border-radius:var(--r-l);background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--brass)}
 .tipcard b{font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:.04em;line-height:1.4}
 .tipcard .tipq{font-size:13.5px;color:var(--muted);line-height:1.65}
@@ -2410,7 +2424,7 @@ function renderHome(app) {
   <section class="hero" aria-label="現在のランク">
     <div class="radar">${insignia(rp.i, 92)}</div>
     <div>
-      <div class="lbl num">${beltName(rp.i)} ・ ${String(rp.i + 1).padStart(2,"0")}/${RANKS.length}</div>
+      <div class="lbl num">${beltName(rp.i)} ・ ${String(rp.i + 1).padStart(2,"0")}/${RANKS.length}${st ? ` ・ 連続${st}日` : ""}</div>
       <div class="rk">${rp.cur.n}</div>
       <div class="quote">${esc(rp.cur.m)}</div>
     </div>
@@ -2426,22 +2440,11 @@ function renderHome(app) {
     <div><div class="en">KEIKO</div><div class="big">稽古</div><div class="sm">${exam.long} ・ ${SET_SIZE}問</div></div>
     <div class="chev" aria-hidden="true"><i></i><i></i><i></i></div>
   </button>
-  <div class="hqrow">
-    <button class="subbtn" data-act="quick"><span class="ic">${IC.bolt}</span><span><b>一服</b><span>5問・約2分</span></span></button>
-    <button class="subbtn" data-act="weak"><span class="ic">${IC.target}</span><span><b>弱点克服${weakN ? `<span class="cnt num">${weakN}</span>` : ""}</b><span>間違えた問題</span></span></button>
-  </div>
-
   <section class="orders" aria-label="今日の課題">
     <div class="oh"><b>今日の課題</b><span class="num">${new Date().getMonth()+1}/${new Date().getDate()}</span><div class="spacer"></div><span>1件 +50・全件 +100</span></div>
     ${S.daily.ids.map(id => { const m = MISSIONS.find(x => x.id === id), p = Math.min(S.daily.p[id] || 0, m.goal), done = S.daily.done[id];
       return `<div class="mission ${done?"done":""}">${done ? `<span class="hanko">済</span>` : `<span class="chk"></span>`}<span class="mt">${m.n}</span><span class="mprog num">${p}/${m.goal}</span><span class="mbar"><i style="width:${pct(p,m.goal)}%"></i></span></div>`; }).join("")}
   </section>
-
-  <div class="readouts">
-    <div class="ro"><div class="k">連続稽古</div><div class="v num">${st}<small>日</small></div></div>
-    <div class="ro"><div class="k">正解数</div><div class="v num">${S.stats.correct.toLocaleString()}</div></div>
-    <div class="ro"><div class="k">免状</div><div class="v num">${medalsN}<small>/${MEDALS.length}</small></div></div>
-  </div>
 
   <section class="ops hud" aria-label="合格への道のり">
     <div class="dday">
@@ -2456,37 +2459,38 @@ function renderHome(app) {
     </div>
   </section>
 
-
-
-
-
-
   <div class="sectitle">今月の庭</div>
-  <div class="intel">
-    <button class="card" data-act="season"><div class="mo2 num">${mo}<small style="font-size:13px;color:var(--muted)">月</small></div><div class="in"><span class="eyebrow" style="color:var(--brass)">旬の重点 +3 XP</span><b>${se.t}</b><span>${se.c.join("・")}</span></div></button>
-    <button class="card" data-tree="${tt.id}"><img src="${tt.photos[0].f}" alt="今日の一本の写真"><div class="in"><span class="eyebrow">今日の一本</span><b>${ttOn ? tt.name : "？？？"}</b><span>${ttOn ? esc(tt.g) : "樹木判定で見分けよ"}</span></div></button>
-  </div>
   ${(() => { const t = rp.cur.t, nx = RANKS.find(r => r.t > t);
     return `<button class="gardencard" data-act="garden" style="--garden:url(garden/g${t}.webp);--gy:${[84, 80, 74, 66, 58, 54][t]}%" aria-label="あなたの庭：${GARDEN_NAMES[t]}">
       <span class="gtxt"><span class="eyebrow">あなたの庭 ・ ${t + 1}/6</span><b>${GARDEN_NAMES[t]}</b><span>${nx ? `「${nx.n}」で ${GARDEN_NAMES[nx.t]} に育つ` : "庭は完成した。見事じゃ。"}</span></span></button>`; })()}
+  <div class="intel strip" aria-label="今月の見どころ（横にずらすと続きがあります）">
+    <button class="card" data-act="season"><div class="mo2 num">${mo}<small style="font-size:13px;color:var(--muted)">月</small></div><div class="in"><span class="eyebrow" style="color:var(--brass)">旬の重点 +3 XP</span><b>${se.t}</b><span>${se.c.join("・")}</span></div></button>
+    <button class="card" data-tree="${tt.id}"><img src="${tt.photos[0].f}" alt="今日の一本の写真"><div class="in"><span class="eyebrow">今日の一本</span><b>${ttOn ? tt.name : "？？？"}</b><span>${ttOn ? esc(tt.g) : "樹木判定で見分けよ"}</span></div></button>
   ${(() => { const T = window.TIPS || []; if (!T.length) return ""; const i = (today() * 13) % T.length, tp = T[i];
     return `<button class="tipcard" data-tip="${i}"><span class="eyebrow">今日の豆知識 ・ ${esc(tp.c)}</span><b>${rb(tp.t)}</b><span class="tipq">「${rb(tp.s)}」</span><span class="more">続きを読む</span></button>`; })()}
+  </div>
 
   <div class="sectitle">稽古の種類</div>
   <div class="modes">
-    <button class="mode" data-act="hot"><span class="ic">${IC.star}</span><b>頻出テーマ</b><span>過去問によく出るテーマだけ。${qPool(S.exam).filter(q => q.hot).length}問</span></button>
+    <button class="mode" data-act="quick"><span class="ic">${IC.bolt}</span><b>一服</b><span>5問・約2分。すき間時間に</span></button>
+    <button class="mode" data-act="weak"><span class="ic">${IC.target}</span><b>弱点克服${weakN ? `<span class="cnt num">${weakN}</span>` : ""}</b><span>${weakN ? `間違えた問題 ${weakN}問をやり直す` : "間違えた問題をやり直す"}</span></button>
     <button class="mode" data-act="mock"><span class="ic">${IC.medal}</span><b>腕試し</b><span>本番と同じ形式で${mockSpec(S.exam).n}問。${S.mock[S.exam] != null ? `最高 ${S.mock[S.exam]}点` : "合格ライン" + PASS_LINE(S.exam) + "点"}</span></button>
     <button class="mode" data-act="tree"><span class="ic">${IC.leaf}</span><b>樹木判定</b><span>写真で名前当て。${S.exam[0] === "g" ? `${S.exam[1]}級の実技に出る` : ""}${treePool().length}種</span></button>
+  </div>
+  <details class="moremodes"${S.moreModes ? " open" : ""}><summary>ほかの稽古 ・ ${5 + (S.exam[0] === "g" ? 1 : 0) + (TOOLS.length ? 1 : 0)}種</summary>
+  <div class="modes">
+    <button class="mode" data-act="hot"><span class="ic">${IC.star}</span><b>頻出テーマ</b><span>過去問によく出るテーマだけ。${qPool(S.exam).filter(q => q.hot).length}問</span></button>
     ${S.exam[0] === "g" ? `<button class="mode" data-act="treeexam"><span class="ic">${IC.timer}</span><b>判断等試験</b><span>実技の本番形式。${TREE_EXAM_N[S.exam]}本を1本30秒で判定${S.texam?.[S.exam] != null ? `。最高 ${S.texam[S.exam]}本` : ""}</span></button>` : ""}
     ${TOOLS.length ? `<button class="mode" data-act="tool"><span class="ic">${IC.tool}</span><b>道具判定</b><span>造園の道具を図で名前当て。${TOOLS.length}種</span></button>` : ""}
     <button class="mode" data-act="blitz"><span class="ic">${IC.sand}</span><b>一分勝負</b><span>60秒の早打ち。最高 ${S.stats.blitzBest}問</span></button>
     <button class="mode" data-act="kako"><span class="ic">${IC.scroll}</span><b>過去問の記録</b><span>${(S.kako || []).filter(r => r.exam === S.exam).length ? `最新 ${pct(S.kako.find(r => r.exam === S.exam).c, S.kako.find(r => r.exam === S.exam).n)}%` : "本番の過去問を解いたら点数を記録"}</span></button>
     <button class="mode" data-act="tips"><span class="ic">${IC.book}</span><b>豆知識帳</b><span>お客さんに話せる庭の話。${(window.TIPS || []).length}話 ・ 読んだ ${Object.keys(S.tipsRead || {}).length}話</span></button>
     <button class="mode" data-act="essay"><span class="ic">${IC.pen}</span><b>記述の稽古</b><span>${HOSTED ? "施工経験記述をAI老師が添削" : "施工経験記述を観点ごとに自己採点"}</span></button>
-  </div>
+  </div></details>
   </div>`;
 }
 
+document.addEventListener("toggle", e => { if (e.target.classList?.contains("moremodes")) { S.moreModes = e.target.open ? 1 : 0; save(); } }, true);
 function renderDrill(app) {
   const cats = [...new Set(qPool(S.exam).map(q => q.cat))], se = seasonNow();
   const fs = cats.map(c => [c, frontStats(S.exam, c)]);
